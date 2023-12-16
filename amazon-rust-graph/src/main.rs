@@ -12,16 +12,26 @@ fn main() {
         Ok(products) => {
             println!("Parsed {} products", products.len());
 
-            // Build graph
-            let (graph, asin_index_map) = build_graph(&products);
-            println!("Graph built with {} nodes", graph.node_count());
+            // Build graph (Ignore asin index map for now)
+            let (graph, _asin_index_map) = build_graph(&products);
+            println!("Graph built with {} nodes and {} edges.", graph.node_count(), graph.edge_count());
 
             // Find products with most connections
-            let highly_connected_asins = find_highly_connected_nodes(&graph, &asin_index_map);
+            let highly_connected = find_highly_connected_nodes(&graph);
             println!("Highly connected products:");
-            for asin in highly_connected_asins {
-                println!("{}", asin);
+            for (asin, title, num_connections) in highly_connected {
+                println!("ASIN: {}, Title: {}, Connections: {}", asin, title, num_connections);
             }
+            
+            let degree_distribution = graph::analyze_degree_distribution(&graph);
+            println!("Degree Distribution:");
+            let mut degrees: Vec<_> = degree_distribution.keys().collect();
+            degrees.sort();
+            
+            for degree in degrees {
+                let (count, percentage) = degree_distribution[degree];
+                println!("Degree: {}, Count: {}, Percentage: {:.2}%", degree, count, percentage);
+            }        
         },
         Err(e) => println!("Error parsing file: {}", e),
     }
